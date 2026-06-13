@@ -162,6 +162,50 @@
       color: var(--text-dim);
     }
     .stat-pill span { color: var(--accent-light); font-weight: 700; }
+
+    /* ─── Quiz Mode Cards ────────────────────────────────────── */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      width: 100%;
+      max-width: 680px;
+    }
+    .mode-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .mode-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow);
+    }
+    .mode-card-1 { border-color: #10b981; }
+    .mode-card-1:hover { background: rgba(16,185,129,0.08); box-shadow: 0 8px 30px rgba(16,185,129,0.2); }
+    .mode-card-2 { border-color: #7c6ff7; }
+    .mode-card-2:hover { background: rgba(124,111,247,0.08); box-shadow: 0 8px 30px rgba(124,111,247,0.25); }
+    .mode-card-3 { border-color: #f59e0b; }
+    .mode-card-3:hover { background: rgba(245,158,11,0.08); box-shadow: 0 8px 30px rgba(245,158,11,0.2); }
+    .mode-icon { font-size: 2.4rem; }
+    .mode-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .mode-count { font-size: 2rem; font-weight: 900; line-height: 1; }
+    .mode-card-1 .mode-count { color: #10b981; }
+    .mode-card-2 .mode-count { color: #a78bfa; }
+    .mode-card-3 .mode-count { color: #f59e0b; }
+    .mode-qs { font-size: 0.78rem; color: var(--text-muted); }
+    .mode-time { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    @media (max-width: 520px) {
+      .mode-grid { grid-template-columns: 1fr; max-width: 320px; }
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
@@ -1192,6 +1236,13 @@ const CAT_ICON = {
   "عام":            "📚",
 };
 
+// ── Quiz modes ─────────────────────────────────────────────────────
+const MODES = [
+  { count: 24, name: "سريع",    icon: "⚡", cls: "mode-card-1", time: "~3 دقائق" },
+  { count: 32, name: "متوسط",   icon: "🎯", cls: "mode-card-2", time: "~5 دقائق" },
+  { count: 40, name: "شامل",    icon: "🏆", cls: "mode-card-3", time: "~7 دقائق" },
+];
+
 // ── State ──────────────────────────────────────────────────────────
 let state = {
   screen: "landing",    // "landing" | "quiz" | "results"
@@ -1199,6 +1250,7 @@ let state = {
   currentIdx: 0,
   score: 0,
   answered: false,
+  modeCount: 24,        // how many questions this run
 };
 
 // ── Fisher-Yates shuffle ───────────────────────────────────────────
@@ -1211,9 +1263,9 @@ function shuffle(arr) {
   return a;
 }
 
-// ── Prepare questions (shuffle questions + options) ────────────────
-function prepareQuestions() {
-  let qs = CONFIG.shuffleQuestions ? shuffle(QUESTIONS) : [...QUESTIONS];
+// ── Prepare questions (shuffle, slice to count, shuffle options) ───
+function prepareQuestions(count) {
+  let qs = shuffle(QUESTIONS).slice(0, count);
   if (CONFIG.shuffleOptions) {
     qs = qs.map(q => {
       const correctText = q.options[q.correct];
@@ -1284,20 +1336,36 @@ function renderLanding() {
         <div class="landing-icon">🏛</div>
         <h1>${CONFIG.title}</h1>
         <p>${CONFIG.subtitle}</p>
-        <div class="stat-pills">
-          <div class="stat-pill"><span>${QUESTIONS.length}</span> سؤال</div>
-          <div class="stat-pill">نسبة النجاح <span>${CONFIG.passingScore}%</span></div>
-          <div class="stat-pill">أسئلة مختلطة</div>
+        <p style="font-size:0.85rem;color:var(--text-muted)">اختر مستوى الاختبار — الأسئلة تتغير عشوائيًا في كل مرة</p>
+
+        <div class="mode-grid">
+          ${MODES.map((m, i) => `
+            <div class="mode-card ${m.cls}" data-count="${m.count}">
+              <div class="mode-icon">${m.icon}</div>
+              <div class="mode-name">${m.name}</div>
+              <div class="mode-count">${m.count}</div>
+              <div class="mode-qs">سؤال</div>
+              <div class="mode-time">${m.time}</div>
+            </div>`).join("")}
         </div>
-        <button class="btn btn-primary" id="startBtn">ابدأ الاختبار &nbsp;🚀</button>
+
+        <div class="stat-pills">
+          <div class="stat-pill">البنك الكلي <span>${QUESTIONS.length}</span> سؤال</div>
+          <div class="stat-pill">نسبة النجاح <span>${CONFIG.passingScore}%</span></div>
+        </div>
       </div>
     </div>`;
-  document.getElementById("startBtn").onclick = startQuiz;
+
+  document.querySelectorAll(".mode-card").forEach(card => {
+    card.addEventListener("click", () => startQuiz(parseInt(card.dataset.count)));
+  });
 }
 
 // ── Start quiz ─────────────────────────────────────────────────────
-function startQuiz() {
-  state.questions = prepareQuestions();
+function startQuiz(count) {
+  const n = count || state.modeCount;
+  state.modeCount = n;
+  state.questions = prepareQuestions(n);
   state.currentIdx = 0;
   state.score = 0;
   state.answered = false;
@@ -1435,7 +1503,7 @@ function renderResults() {
       </div>
     </div>`;
 
-  document.getElementById("retakeBtn").onclick = startQuiz;
+  document.getElementById("retakeBtn").onclick = () => startQuiz(state.modeCount);
   document.getElementById("homeBtn").onclick = () => { state.screen = "landing"; render(); };
   document.getElementById("shareBtn").onclick = () => {
     const txt = `حصلت على ${state.score}/${total} (${pct}%) في ${CONFIG.title}! ${grade.emoji}`;
