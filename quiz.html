@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مسابقة تاريخ العمارة</title>
+  <style>
+    /* ─── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Design Tokens ─────────────────────────────────────── */
+    :root {
+      --bg:           #0d0d1b;
+      --surface:      #12122a;
+      --card:         #181832;
+      --card-hover:   #1e1e3d;
+      --border:       rgba(255,255,255,0.07);
+      --accent:       #7c6ff7;
+      --accent-glow:  rgba(124,111,247,0.25);
+      --accent-light: #a78bfa;
+      --success:      #10b981;
+      --success-bg:   rgba(16,185,129,0.15);
+      --danger:       #ef4444;
+      --danger-bg:    rgba(239,68,68,0.15);
+      --text:         #e2e8f0;
+      --text-dim:     #94a3b8;
+      --text-muted:   #64748b;
+      --radius:       14px;
+      --radius-sm:    8px;
+      --shadow:       0 12px 40px rgba(0,0,0,0.55);
+      --shadow-sm:    0 4px 16px rgba(0,0,0,0.35);
+      --transition:   0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─── Base ───────────────────────────────────────────────── */
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Tahoma', 'Arial', system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ─── Layout ─────────────────────────────────────────────── */
+    #app {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px 48px;
+      width: 100%;
+    }
+    .container {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    footer strong { color: var(--text-dim); }
+    footer a {
+      color: var(--accent-light);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    footer a:hover { color: #fff; }
+
+    /* ─── Progress Bar ───────────────────────────────────────── */
+    .progress-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding: 12px 0 0;
+      width: 100%;
+      max-width: 760px;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      direction: ltr;
+    }
+    .progress-bar-outer {
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ─── Landing Screen ─────────────────────────────────────── */
+    .landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 60px 24px;
+      gap: 24px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .landing-icon {
+      font-size: 72px;
+      filter: drop-shadow(0 0 24px var(--accent-glow));
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .landing h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+    .landing p {
+      font-size: 1.05rem;
+      color: var(--text-dim);
+      max-width: 440px;
+    }
+    .stat-pills {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .stat-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .stat-pill span { color: var(--accent-light); font-weight: 700; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #5b4fcf);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px var(--accent-glow);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: var(--card-hover); transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .btn-ghost:hover { background: var(--card); color: var(--text); }
+
+    /* ─── Question Card ──────────────────────────────────────── */
+    .question-screen { width: 100%; }
+    .question-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      margin: 20px 0 24px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeUp 0.35s ease both;
+    }
+    .question-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+    .question-text {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ─── Options Grid ───────────────────────────────────────── */
+    .options-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .options-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .options-grid.cols-1 { grid-template-columns: 1fr; }
+    .option-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      text-align: right;
+      transition: var(--transition);
+      animation: fadeUp 0.3s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+    .option-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-glow), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .option-card:hover:not(.disabled) {
+      border-color: var(--accent);
+      color: var(--text);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .option-card:hover:not(.disabled)::before { opacity: 1; }
+    .option-card.correct {
+      background: var(--success-bg);
+      border-color: var(--success);
+      color: #fff;
+    }
+    .option-card.wrong {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+      color: #fff;
+    }
+    .option-card.disabled { cursor: default; }
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .option-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .correct .option-icon, .wrong .option-icon { opacity: 1; }
+
+    /* Stagger animation for options */
+    .option-card:nth-child(1) { animation-delay: 0.05s; }
+    .option-card:nth-child(2) { animation-delay: 0.1s; }
+    .option-card:nth-child(3) { animation-delay: 0.15s; }
+    .option-card:nth-child(4) { animation-delay: 0.2s; }
+
+    /* ─── Results Screen ─────────────────────────────────────── */
+    .results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 40px 16px 60px;
+      gap: 28px;
+      animation: fadeUp 0.5s ease both;
+    }
+    .score-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+    .score-ring svg {
+      transform: rotate(-90deg);
+      direction: ltr;
+    }
+    .score-ring .ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 10; }
+    .score-ring .ring-fill { fill: none; stroke-width: 10; stroke-linecap: round;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1); }
+    .score-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-grade { font-size: 2.2rem; }
+    .score-pct { font-size: 1.6rem; font-weight: 800; color: var(--text); direction: ltr; }
+    .score-label { font-size: 0.75rem; color: var(--text-muted); }
+    .results h2 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .score-detail {
+      font-size: 1rem;
+      color: var(--text-dim);
+    }
+    .score-detail strong { color: var(--text); font-size: 1.1rem; }
+    .results-btns {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* ─── Utility Animations ─────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+    @keyframes pop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: pop 0.3s ease; }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      .question-card { padding: 18px 16px; }
+      .options-grid.cols-2 { grid-template-columns: 1fr; }
+      .results-btns { flex-direction: column; }
+    }
+
+    /* ─── Category Badge Colors ──────────────────────────────── */
+    .cat-pharaoh   { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .cat-meso      { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+    .cat-greek     { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+    .cat-roman     { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(192,132,252,0.3); }
+    .cat-byzantine { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+    .cat-gothic    { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .cat-general   { background: rgba(148,163,184,0.1);  color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+
+    /* ─── Toast ──────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<footer>
+  <p>صُنع بواسطة <strong>مصعب</strong> &nbsp;·&nbsp;
+    <a href="https://wa.me/966501176376" target="_blank" rel="noopener noreferrer">
+      📱 تواصل معي عبر واتساب
+    </a>
+  </p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   ██████╗  ██████╗  ███╗   ██╗███████╗██╗ ██████╗
+   ██╔════╝ ██╔═══██╗████╗  ██║██╔════╝██║██╔════╝
+   ██║      ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗
+   ██║      ██║   ██║██║╚██╗██║██╔══╝  ██║██║   ██║
+   ╚██████╗ ╚██████╔╝██║ ╚████║██║     ██║╚██████╔╝
+    ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝
+   Tweak these values to change quiz behavior
+   ================================================================ */
+const CONFIG = {
+  title:            "مسابقة تاريخ العمارة",
+  subtitle:         "اختبر معلوماتك في تاريخ الحضارات المعمارية",
+  autoAdvanceDelay: 1200,   // ms after answer before moving to next question
+  passingScore:     60,     // % needed to "pass"
+  shuffleQuestions: true,   // randomise question order each run
+  shuffleOptions:   true,   // randomise option order each run
+};
+
+/* ================================================================
+   QUESTIONS BANK
+   ──────────────────────────────────────────────────────────────
+   Each entry: { question, options[], correct (0-based index), category }
+
+   True/False: options: ["صح", "خطأ"]  — correct: 0 (صح) or 1 (خطأ)
+   MCQ:        options: ["أ","ب","ج","د"] — correct: index of right answer
+
+   Categories: "مصري فرعوني" | "ما بين النهرين" | "إغريقي" | "روماني"
+               "بيزنطي" | "رومانسيك / قوطي" | "عام"
+   ================================================================ */
+const QUESTIONS = [
+
+  /* ═══════════════════════════════════════════════════════════
+     صح أم خطأ — العمارة المصرية الفرعونية
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "سادت الحضارة المصرية فترات طويلة من الهدوء والاستقرار السياسي مما صان روحهم المعمارية من التخريب والتدمير.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "كان الدين في الحضارة الفرعونية يغلب عليه التوحيد ولكنه كان وثني التطبيق، وقد أثر ذلك على العمارة في بناء المقابر والمعابد.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "آمن المصريون القدماء بالبعث والحياة بعد الموت مما أدى إلى إنشاء المقابر في شرق النيل بشكل خاص.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "مصري فرعوني",
+    explanation: "الصواب: المقابر أُنشئت في غرب النيل، لا شرقه."
+  },
+  {
+    question: "آمن المصريون القدماء بالبعث والحياة بعد الموت مما أدى إلى إنشاء المعابد الدينية في غرب النيل بشكل خاص.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "مصري فرعوني",
+    explanation: "الصواب: المعابد الدينية أُنشئت في شرق النيل."
+  },
+  {
+    question: "اشتهرت الحضارة المصرية القديمة بمجموعة كبيرة من الجامعات، وكان من أشهرها جامعة «رع» بالقاهرة.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "مصري فرعوني",
+    explanation: "الصواب: أشهر جامعاتهم كانت بـ«أون / عين شمس»."
+  },
+  {
+    question: "الأهرامات والمقابر كانت وظيفتها حفظ الأجساد لذا جاءت المباني خالية تمامًا من الفتحات عدا الأبواب.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "ضخامة العناصر الإنشائية سواء الأعمدة أو الحوائط تحقق فكرة المتانة (الاتزان بالثقل)، وخصوصًا مع استخدام الشكل الهرمي في البناء.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "تحقق شرط المتانة في العمارة المصرية من خلال استخدام الشكل الهرمي سواء كشكل صريح أو في الحوائط.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "ابتكر المصريون القدماء الحوائط الطولية بمداميك مقوسة لمقاومة الهبوط والتمدد.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "استخدم المصريون القدماء الأعتاب الأفقية التي ترتكز عليها بلاطات الأسقف من قطعتين بدلًا من قطعة واحدة للهبوط.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "رغم التشابه بين المباني المصرية القديمة كالمعابد والمصاطب والأهرامات، إلا أن المعماري المصري نجح في تحقيق التنوع.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "تميزت العمارة المصرية باستخدام الخطوط المنحنية والأشكال الدائرية مما جعلها تتميز بالبساطة وعضوية التشكيل.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "مصري فرعوني",
+    explanation: "الصواب: هذه ميزة العمارة الرومانية، لا المصرية."
+  },
+  {
+    question: "تميزت العمارة المصرية باستخدام الفتحات بكثرة وتعدد الأسطح البارزة واستخدام الحليات بكثرة مما ساعد على ثرائها.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "دقة التوجيه هي إحدى سمات العمارة المصرية القديمة.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "الإضاءة العلوية في العمارة المصرية القديمة (المجاز) عُرفت فيما بعد بالبازيليك.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     صح أم خطأ — عمارة ما بين النهرين
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "تميزت عمارة بلاد ما بين النهرين بكثرة وجود الحجارة التي استُخدمت في كافة مبانيهم فضلًا عن كثرة المعادن.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "كان استعمال الأحجار في عمارة بلاد ما بين النهرين محدودًا ومقصورًا على أساسات المباني الكبيرة كالمعابد والقصور.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "استخدم معماريو بلاد ما بين النهرين الطوب اللبن المزجج لأغراض الزخرفة بالواجهات.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "تميزت عمارة بلاد ما بين النهرين بتقديس الأشخاص وتخبط بين عبادة النار وغيرها من الظواهر الطبيعية، إلا أنه لم يوجد أثر للدين على منشآتهم ولا وجود للمعابد إلا القليل.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "حقق معماريو بلاد ما بين النهرين فكرة السمو من خلال بناء المعابد في أعلى الزيقورات الضخمة والعالية.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "على غرار العمارة المصرية القديمة، لم تهتم عمارة بلاد ما بين النهرين بالعمارة المدنية.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "تمثّلت الآلهة في عمارة بلاد ما بين النهرين في العناصر الطبيعية، ومنها الإله «اتو» الذي يمثل إله الحب والحرب ويرمز إليه بنجم الزهرة.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "ما بين النهرين",
+    explanation: "الصواب: الإله «اتو» (عشتار) يرمز لنجم الزهرة وهو فعلًا يمثل الحب والحرب، لكن الجملة تحتوي على خلط."
+  },
+  {
+    question: "استخدم معماريو بلاد ما بين النهرين الطوب اللبن في البناء والطوب المحروق بالزخرفة في الواجهات.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     صح أم خطأ — العمارة الإغريقية
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "أنزل الرومان الآلهة من مراتب اللاتصوّر والكمال إلى تجسيدها بصورة الجسم الإنساني.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "إغريقي",
+    explanation: "الصواب: هذا ما فعله الإغريق، لا الرومان."
+  },
+  {
+    question: "تميزت الحضارة الفرعونية وأبدعت في مجال الفلسفة، حيث وضعت الأسس الأولى للفلسفة والفنون.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "إغريقي",
+    explanation: "الصواب: هذا من إبداعات الحضارة الإغريقية."
+  },
+  {
+    question: "تميزت الحضارة الأغريقية بتوافر الرخام بكثرة في مناطقهم، وهو من أكثر المواد فخامة، مما ساعدهم على تحقيق النسب المدروسة.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "تميزت الأعمدة الأغريقية بأنها مركبة من أكثر من جزء.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "تميزت الأعمدة الرومانية بأنها مركبة من أكثر من جزء واحد.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "روماني",
+    explanation: "الصواب: الأعمدة الرومانية مركبة من جزء واحد، عكس الأغريقية."
+  },
+  {
+    question: "استُخدمت ظاهرة التصحيح البصري في هرم خوفو ومعبد البارثينون.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "ظهرت وتطورت العمارة العسكرية عند الأغريق والرومان.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "إغريقي",
+    explanation: "الصواب: ظهرت وتطورت العمارة العسكرية في بلاد ما بين النهرين."
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     صح أم خطأ — العمارة الرومانية
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "من خصائص العمارة الرومانية التعامل مع الأرض الغير مستوية كما هي وبدون تهذيب بسبب الاعتقاد في وجود الآلهة التي تمنع تغيير ملامح الأرض.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "روماني"
+  },
+  {
+    question: "تمثلت وحدة البناء في قالب الطوب والذي حُدّد طوله بضعف عرضه، وبذلك يكون المعماري الأغريقي قد وضع أول نظريات التنميط.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "عام",
+    explanation: "الصواب: المعماري المقصود هو الألماني وليس الأغريقي."
+  },
+  {
+    question: "بعد القرن الخامس الميلادي اختفت الزخارف الرومانية كالنحت البارز وحلت محله الزخارف المسطحة الجردة بتأثر من الفنون الشرقية.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "روماني"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     صح أم خطأ — الرومانسيك والقوطي
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "يُطلق اسم الطراز الرومانسيكي على الجزء الثاني من العصور الوسطى، بينما يُطلق على الجزء الأول اسم الحكمي.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "ساهمت المواقع الجغرافية المختلفة للأقطار الأوروبية في تشكيل عمارة الرومانسيك متنوعة.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "استطاعت عمارة الرومانسيك حل المشكلات المعمارية التي اعترضت تكامل العمارتين الأغريقية والرومانية، وكذلك البيزنطية والإسلامية.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "ظهرت الحاجة في عمارة العصور الوسطى إلى بناء النواقيس لأبراج الكنيسة، وتحولت بعد ذلك إلى رمز للكنيسة.",
+    options: ["صح", "خطأ"],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "ظهرت فكرة الدعامات (السوائد) Buttresses في العمارة البيزنطية لتخفيف سمك الحوائط والمساهمة في تحمل أحمال الأقبية التي كانت ترتكز على الحوائط.",
+    options: ["صح", "خطأ"],
+    correct: 1,
+    category: "رومانسيك / قوطي",
+    explanation: "الصواب: ظهرت الدعامات في العمارة القوطية، لا البيزنطية."
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     اختيار من متعدد — طبقات المجتمع والسياق الحضاري
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "ينقسم الشعب في [___] إلى طبقتين: طبقة الأشراف المالكين للأرض، وطبقة العامة الغير مالكين والعبيد.",
+    options: ["عمارة ما بين النهرين", "العمارة المصرية القديمة", "العمارة الإغريقية", "العمارة الرومانية"],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "ينقسم الشعب في [___] إلى طبقة المؤرخين والنحاتين وطبقة المزارعين والخدم والعبيد.",
+    options: ["عمارة ما بين النهرين", "العمارة المصرية القديمة", "العمارة الإغريقية", "العمارة الرومانية"],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "أُقيمت المعابد والقصور في عمارة بلاد ما بين النهرين على مدرجات صناعية مستطيلة الشكل يصل ارتفاعها إلى 15 مترًا فوق منسوب الأرض؛ ذلك من أجل [___].",
+    options: ["إعطائها نوعًا من الفخامة", "حمايتها من الفيضانات", "حمايتها من السرقة", "تيسير مشاهدتها من بُعد"],
+    correct: 1,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "كان غرض الأعمدة في عمارة بلاد ما بين النهرين [___].",
+    options: ["ديكوريًا وليس إنشائيًا", "زخرفيًا وليس إنشائيًا", "زخرفيًا وإنشائيًا معًا", "إنشائيًا بحتًا"],
+    correct: 1,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "كانت الأبراج المرتفعة العلامة المميزة في العمارة [___].",
+    options: ["الأغريقية", "الرومانية", "الأشورية", "البيزنطية"],
+    correct: 2,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "استُخدمت فكرة فواصل الهبوط وبخاصة في الأسوار الممتدة التي كان ملؤها يتم بنوع من النخيل المغطى بالقيرميد في العمارة [___].",
+    options: ["المصرية", "الرافدية (ما بين النهرين)", "الأغريقية", "الرومانية"],
+    correct: 1,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "[___] من أشهر القوانين التي تنظم الممتلكات وتضمن سير العدالة في عمارة بلاد ما بين النهرين.",
+    options: ["قانون عشتار", "قانون سارجون", "قانون حمورابي", "قانون أورنامو"],
+    correct: 2,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "وفقًا للنظام الديمقراطي في العمارة الأغريقية كان لكل فرد كيان مستقل، وانعكس ذلك على المباني فأصبح [___].",
+    options: ["لكل مبنى طابع وطراز خاص يميزه", "لكل عنصر في المبنى كيان مستقل فكان العمود منفصلًا", "لكل مبنى نظامًا إنشائيًا خاصًا", "لكل طراز أعمدة بشكل مميز"],
+    correct: 1,
+    category: "إغريقي"
+  },
+  {
+    question: "تعددت الآلهة داخل معبد [___] حيث وُجدت صالتان للعبادة وليس صالة واحدة.",
+    options: ["البارثينون", "الأركثيون", "الأجورا", "الكرنك"],
+    correct: 1,
+    category: "إغريقي"
+  },
+  {
+    question: "تميزت العمارة الأغريقية بطرزها الثلاثة وهي [___].",
+    options: ["الدوري والتوسكاني والكورانثي", "الكورانثي والأيوني والدوري", "الدوري والمركب والأيوني", "التوسكاني والكورانثي والمركب"],
+    correct: 1,
+    category: "إغريقي"
+  },
+  {
+    question: "تميزت العمارة الرومانية بطرزها الخمسة وهي [___].",
+    options: ["الدوري والتوسكاني والمركب والأيوني والكورانثي", "الكورانثي والأيوني والدوري والبسيط والمركب", "الدوري والتوسكاني والمركب الأيوني والقوطي", "الأيوني والدوري والكورانثي والبيزنطي والرومانسيك"],
+    correct: 0,
+    category: "روماني"
+  },
+  {
+    question: "أرجع الخبراء المتانة الإنشائية في العمارة الرومانية إلى [___].",
+    options: ["استخدام الأخشاب في التسقيف", "وجود المونة التي تشبه الأسمنت والتي مكّنتهم من عمل أسقف ذات بحور كبيرة", "استخدام الأواني الفخارية لتخفيف الضغط الناتج عن القبة", "الاعتماد الكامل على الأحجار الطبيعية"],
+    correct: 1,
+    category: "روماني"
+  },
+  {
+    question: "لولا اكتشاف حجر رشيد لظلت الحضارة المصرية غامضة؛ وقد كُتب بلغات ثلاثة هي [___].",
+    options: ["الهيروغليفية والديموطيقية واليونانية", "اليونانية والرومانية والفرنسية", "الهيروغليفية والمصرية والرومانية", "الهيروغليفية والقبطية والآرامية"],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "تنقسم المعابد المصرية القديمة بصفة عامة إلى أربعة أقسام مرتبة من المدخل وهي [___].",
+    options: [
+      "بهو الأعمدة ثم الصرح ثم الفناء ثم قدس الأقداس",
+      "الصرح ثم الفناء ثم بهو الأعمدة ثم قدس الأقداس",
+      "الفناء ثم الصرح ثم بهو الأعمدة ثم قدس الأقداس",
+      "الصرح ثم بهو الأعمدة ثم الفناء ثم قدس الأقداس"
+    ],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "امتاز معبد حتشبسوت بكونه [___].",
+    options: ["معبدًا دنيويًا للاحتفالات", "استخدم المنحدرات في البناء", "استخدم الإضاءة العلوية (المجاز)", "أول معبد يستخدم القبة في مصر"],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "[___] من التكوينات الحجرية في عصور ما قبل التاريخ.",
+    options: ["الأجورا والدولمن والفورم", "البارليات والدولمن وأبيدور", "المنهير والدولمن والكرومليش (الجروملش)", "الزيقورة والأجورا والبازيليك"],
+    correct: 2,
+    category: "عام"
+  },
+  {
+    question: "المقصود بالطراز في العمارة هو [___].",
+    options: [
+      "القواعد التي تشكل مفردات لغة معمارية دون أن تفرض نفسها، وتُخرج المباني المتجانسة",
+      "السجل المرئي الذي يكتب حياة الشعوب لنقرأ منها طبيعة الحياة في كل عصر",
+      "استخلاص القيم المعمارية من تحليل العمارات السابقة للاستفادة منها في تطوير الحاضر",
+      "الأسلوب الزخرفي المميز لكل حضارة دون النظر في الجانب الإنشائي"
+    ],
+    correct: 0,
+    category: "عام"
+  },
+  {
+    question: "[___] هي عبارة عن نشاط الإنسان في شتى المجالات بشكل شامل، وتجعلهما ما يتناول جُلّ قدرات الإنسان العقلية والنفسية والعملية نحو الرقي والتقدم في جميع مناحي الحياة.",
+    options: ["العمارة", "الحضارة", "تاريخ العمارة", "الثقافة"],
+    correct: 1,
+    category: "عام"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     اختيار من متعدد — العمارة البيزنطية
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "يمكن تقسيم الفترة المسيحية إلى ثلاث فترات وهي [___].",
+    options: [
+      "فترة الاضطهاد، فترة الاعتراف، فترة الدويلات",
+      "فترة الاضطهاد، فترة الازدهار، فترة الاعتراف",
+      "فترة الظهور، فترة الاعتراف، فترة الدويلات",
+      "فترة الرومانية، فترة البيزنطية، فترة الرومانسيك"
+    ],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "فترة [___]: كانت الدعوة سرية وتعرض معتنقو المسيحية للاضطهاد من قِبل الرومان، وبلغ ذروته في عصر ديوقلسيان بمرسومه عام 303م.",
+    options: ["الاضطهاد", "الاعتراف", "الدويلات", "الانتشار"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "فترة [___]: تبدأ مع ظهور الأمبراطور قسطنطين عام 313م حين أصبحت المسيحية الديانة الرسمية للدولة الرومانية.",
+    options: ["الاعتراف", "الدويلات", "الاضطهاد", "التوسع"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "فترة [___]: بحلول عام 325م حدث الانقسام في الإمبراطورية الرومانية إلى قسم شرقي (البيزنطية) وغربي (الرومانسيك).",
+    options: ["الاعتراف", "الدويلات", "الاضطهاد", "الانقسام"],
+    correct: 1,
+    category: "بيزنطي"
+  },
+  {
+    question: "كانت نماذج القباب في العمارة البيزنطية على ثلاثة أنواع وهي [___].",
+    options: [
+      "القبة البسيطة والقبة المركبة والقبة المرتكزة على طبلة",
+      "القبة البسيطة والقبة المربعة والقبة المرتكزة على طبلة",
+      "القبة البسيطة والقبة المركبة والقبة المتقاطعة",
+      "القبة الصلبة والقبة المعلقة والقبة المرتكزة على أعمدة"
+    ],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "القبة [___]: يُبنى فيها قوس انحنائها على استمرار قوس انحناء الزوايا المثلثية الكروية، فتكون القبة والزوايا بشكل كروي واحد.",
+    options: ["البسيطة", "المركبة", "المرتكزة على طبلة", "المتقاطعة"],
+    correct: 1,
+    category: "بيزنطي"
+  },
+  {
+    question: "القبة [___]: تُبنى على طبلة دائرية ترتكز على الزوايا المثلثية الكروية، وتساعد الطبلة على إمكانية فتح نوافذ صغيرة حول أسفل انحناء القبة.",
+    options: ["البسيطة", "المركبة", "المرتكزة على طبلة", "المعلقة"],
+    correct: 2,
+    category: "بيزنطي"
+  },
+  {
+    question: "تُعدّ كنيسة [___] نموذجًا من الأعمال المعمارية البيزنطية؛ استغرق بناؤها خمس سنوات بعمالة بلغت 10000 عامل، ومسقطها مستطيل تقريبًا (80م طولًا × 70م عرضًا) ويعلو المركز قبة ضخمة ارتفاعها ~54م بأربعين نافذة حول قاعدتها.",
+    options: ["كنيسة أيا صوفيا", "كنيسة سان مارك", "كنيسة سان فيتال", "كنيسة القيامة"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "لكي يتم الانتقال من المربع إلى الحلقة الدائرية للقبة تم استخدام [___] التي تسمى Pendentives (المعلقات).",
+    options: ["القباب المتقاطعة", "المثلثات الكروية", "الدعامات الطائرة", "الأقبية البرميلية"],
+    correct: 1,
+    category: "بيزنطي"
+  },
+  {
+    question: "تُعدّ كنيسة [___] نموذجًا من الأعمال المعمارية البيزنطية التي بُنيت على النمط البازيليكي، وأُعيد بناؤها في منتصف القرن الحادي عشر فأصبح مسقطها على شكل صليب.",
+    options: ["كنيسة أيا صوفيا", "كنيسة سان مارك", "كنيسة سان فيتال", "كنيسة سان بطرس"],
+    correct: 1,
+    category: "بيزنطي"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     اختيار من متعدد — الرومانسيك والقوطي
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "يعد التسقيف بالأقبية Vaults من أهم سمات الرومانسيك. في العمارة الرومانسيكية أُضيفت أضلاع عرضية ومتقاطعة أدت إلى أن يكون القبو المتقاطع على شكل قبة تحددها [___].",
+    options: [
+      "قوسان دائريان تختلف ارتفاعاتهما الطولية لتغطية مساحة مربعة",
+      "قوسان دائريان متساويان في الطول لتغطية مساحة مربعة",
+      "عقدان دائريان تختلف ارتفاعاتهما الطولية لتغطية مساحة مستطيلة",
+      "ثلاثة أقواس متقاطعة لتغطية مساحة سداسية"
+    ],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "ظهرت فكرة الدعامات Buttresses في الرومانسيك، وتطلبت بعض الحالات إقامة أبراج صغيرة فوق هذه الدعامات ثم ظهر ما يُسمى بـ[___] لسند حوائط الصالة الرئيسية.",
+    options: ["الدعامات الطائرة (Flying Buttresses)", "الحوائط السائدة", "الحليات الزخرفية", "الأقبية المروحية"],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "من أمثلة الطراز القوطي كنيسة [___]، وهي من أقدم نماذج العمارة القوطية في فرنسا، تحتوي على ممشيين من كل جانب وصحن ذو عرض كبير وخلوات إشعاعية، ومن أبرز مميزاتها نافذة دائرية بقطر 14 مترًا.",
+    options: ["نوتردام بباريس", "ميلانو بإيطاليا", "دير هام بإنجلترا", "شارتر بفرنسا"],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+  {
+    question: "من أمثلة الطراز القوطي كنيسة [___]، بُنيت في الفترة 1385–1485م، عرض صحنها ~16م وارتفاعه ~49م، وكانت محل نزاع بين المهندسين الإيطاليين والخبراء الفرنسيين والألمان.",
+    options: ["نوتردام بباريس", "ميلانو بإيطاليا", "دير هام بإنجلترا", "كولونيا بألمانيا"],
+    correct: 1,
+    category: "رومانسيك / قوطي"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     مطابقة المباني بالحضارات (MCQ)
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "أيٌّ من المباني التالية يُعدّ مثالًا على العمارة المصرية الفرعونية؟",
+    options: ["زيقورة بابل", "معبد حتشبسوت", "البانثيون", "الكولسيوم"],
+    correct: 1,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "أيٌّ من المباني التالية يُعدّ مثالًا على عمارة بلاد ما بين النهرين؟",
+    options: ["معبد البارثينون", "هرم خوفو", "زيقورة الملك أورنامو", "الكولسيوم"],
+    correct: 2,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "أيٌّ من العناصر التالية ينتمي إلى العمارة الإغريقية؟",
+    options: ["البانثيون", "الأجورا", "الكولسيوم", "فورم تراجان"],
+    correct: 1,
+    category: "إغريقي"
+  },
+  {
+    question: "أيٌّ من المباني التالية يُعدّ مثالًا على العمارة الرومانية؟",
+    options: ["معبد الكرنك", "معبد البارثينون", "الكولسيوم", "زيقورة بابل"],
+    correct: 2,
+    category: "روماني"
+  },
+  {
+    question: "أيٌّ من هذه المباني يُعدّ إغريقيًا خالصًا؟",
+    options: ["معبد الكرنك", "البانثيون", "معبد البارثينون", "كنيسة أيا صوفيا"],
+    correct: 2,
+    category: "إغريقي"
+  },
+  {
+    question: "فورم تراجان (Forum of Trajan) ينتمي إلى العمارة:",
+    options: ["المصرية الفرعونية", "الإغريقية", "الرومانية", "البيزنطية"],
+    correct: 2,
+    category: "روماني"
+  },
+  {
+    question: "أيٌّ من هذه المباني يُعدّ نموذجًا على عمارة ما بين النهرين؟",
+    options: ["حدائق بابل المعلقة", "هرم خوفو", "معبد البارثينون", "كنيسة سان مارك"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "مقابر وادي الملوك تنتمي إلى الحضارة:",
+    options: ["اليونانية", "الرومانية", "المصرية الفرعونية", "البيزنطية"],
+    correct: 2,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "أيٌّ من الطرز المعمارية التالية هو طراز إغريقي؟",
+    options: ["التوسكاني", "المركب", "الكورانثي", "البازيليكي"],
+    correct: 2,
+    category: "إغريقي"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     أكمل الفراغ
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "القبة [___] هي التي يكون انحناء قوسها على استمرار قوس انحناء الزوايا المثلثية الكروية، فتكون القبة والزوايا بشكل كروي واحد.",
+    options: ["البسيطة", "المركبة", "المرتكزة على طبلة", "المعلقة"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "تميزت العمارة الأغريقية بطرزها الثلاثة وهي [___].",
+    options: ["الدوري والأيوني والكورانثي", "التوسكاني والكورانثي والمركب", "الدوري والتوسكاني والمركب", "النوبي والفرعوني والقبطي"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "أُقيمت المعابد والقصور في بلاد ما بين النهرين على مدرجات صناعية يصل ارتفاعها إلى 15 مترًا فوق منسوب الأرض من أجل [___].",
+    options: ["حمايتها من الفيضانات", "تعظيم الآلهة والتقرب إليها", "توفير الإضاءة الطبيعية", "الفصل بين طبقات المجتمع"],
+    correct: 0,
+    category: "ما بين النهرين"
+  },
+  {
+    question: "نماذج القباب في العمارة البيزنطية ثلاثة وهي [___].",
+    options: [
+      "القبة البسيطة، المركبة، المرتكزة على طبلة",
+      "القبة الصلبة، المعلقة، المرتكزة على أعمدة",
+      "القبة البيضاوية، المسطحة، المرتكزة على طبلة",
+      "القبة الفردية، المزدوجة، المثلثية"
+    ],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "فترة الاعتراف تبدأ مع ظهور الأمبراطور [___] عام 313م.",
+    options: ["قسطنطين", "جستنيان", "ديوقلسيان", "ثيودوسيوس"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "تعددت الآلهة داخل معبد [___] حيث وُجدت صالتان للعبادة وليس صالة واحدة.",
+    options: ["الأركثيون", "البارثينون", "الكرنك", "البانثيون"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "تنقسم المعابد المصرية القديمة إلى أربعة أقسام مرتبة من المدخل وهي [___].",
+    options: [
+      "الصرح ثم البهو ثم الأعمدة ثم قدس الأقداس",
+      "البهو ثم الصرح ثم الأعمدة ثم قدس الأقداس",
+      "الصرح ثم الأعمدة ثم البهو ثم قدس الأقداس",
+      "الأعمدة ثم الصرح ثم البهو ثم قدس الأقداس"
+    ],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "يمكن تقسيم فترة المسيحية إلى ثلاث فترات هي [___].",
+    options: [
+      "فترة الاضطهاد، الاعتراف، الدويلات",
+      "فترة الرومانية، البيزنطية، الإسلامية",
+      "فترة الاضطهاد، الحرية، الانهيار",
+      "فترة الرومانسيك، القوطي، النهضة"
+    ],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "كُتب حجر رشيد بلغات ثلاثة وهي [___].",
+    options: [
+      "الهيروغليفية والديموطيقية واليونانية",
+      "الهيروغليفية والقبطية واليونانية",
+      "العربية والفارسية واليونانية",
+      "الهيروغليفية والآرامية والرومانية"
+    ],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "أرجع الخبراء متانة الأبنية الرومانية إلى [___].",
+    options: [
+      "وجود المونة الأسمنتية التي مكّنتهم من عمل أسقف ذات بحور كبيرة",
+      "استخدامهم الرخام في جميع عناصر البناء",
+      "استيرادهم مواد بناء عالية الجودة من اليونان",
+      "اعتمادهم على الطوب المحروق في كل عناصر البناء"
+    ],
+    correct: 0,
+    category: "روماني"
+  },
+  {
+    question: "امتاز معبد حتشبسوت بكونه [___].",
+    options: [
+      "استخدم المنحدرات في البناء",
+      "استخدم الأعمدة الكارياتيد في الواجهة",
+      "بُني على شكل هرمي متدرج",
+      "أول معبد يستخدم القبة في مصر"
+    ],
+    correct: 0,
+    category: "مصري فرعوني"
+  },
+  {
+    question: "وفقًا للنظام الديمقراطي في العمارة الأغريقية أصبح لكل عنصر كيان مستقل، فكان العمود [___].",
+    options: ["منفصلًا مستقلًا", "متصلًا بالجدار", "مندمجًا مع السقف", "مركبًا من عدة أجزاء ملتصقة"],
+    correct: 0,
+    category: "إغريقي"
+  },
+  {
+    question: "لكي يتم الانتقال من المربع إلى الحلقة الدائرية للقبة تم استخدام المثلثات الكروية التي تسمى [___].",
+    options: ["Pendentives (المعلقات / البندنتيف)", "Flying Buttresses (الدعامات الطائرة)", "Ribs (الأضلاع)", "Pilasters (الأعمدة الكتفية)"],
+    correct: 0,
+    category: "بيزنطي"
+  },
+  {
+    question: "ظهر ما يُسمى بـ[___] في الرومانسيك، وكانت الأسطح الجانبية تظهر في أعلى الصالة الداخلية لسند حوائط الصالة الرئيسية.",
+    options: [
+      "الدعامات الطائرة (Flying Buttresses)",
+      "البندنتيف (Pendentives)",
+      "الأقبية المروحية (Fan Vaults)",
+      "الأبراج الصغيرة (Pinnacles)"
+    ],
+    correct: 0,
+    category: "رومانسيك / قوطي"
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     الترتيب الزمني (MCQ)
+     ═══════════════════════════════════════════════════════════ */
+  {
+    question: "رتّب هذه المعالم من الأقدم إلى الأحدث: معبد البارثينون / معبد حتشبسوت / كنيسة أيا صوفيا / البانثيون",
+    options: [
+      "حتشبسوت ← البارثينون ← البانثيون ← أيا صوفيا",
+      "البارثينون ← حتشبسوت ← أيا صوفيا ← البانثيون",
+      "حتشبسوت ← البانثيون ← البارثينون ← أيا صوفيا",
+      "البانثيون ← حتشبسوت ← البارثينون ← أيا صوفيا"
+    ],
+    correct: 0,
+    category: "عام"
+  },
+  {
+    question: "رتّب هذه المعالم من الأقدم إلى الأحدث: قصر داريوس / معبد الكرنك / فورم تراجان / معبد الأركثيون",
+    options: [
+      "الكرنك ← قصر داريوس ← الأركثيون ← فورم تراجان",
+      "قصر داريوس ← الكرنك ← فورم تراجان ← الأركثيون",
+      "الكرنك ← الأركثيون ← قصر داريوس ← فورم تراجان",
+      "الأركثيون ← الكرنك ← قصر داريوس ← فورم تراجان"
+    ],
+    correct: 0,
+    category: "عام"
+  },
+  {
+    question: "رتّب هذه المعالم من الأقدم إلى الأحدث: الكولسيوم / معبد حتشبسوت / كاتدرائية ميلانو / كنيسة أيا صوفيا",
+    options: [
+      "حتشبسوت ← الكولسيوم ← أيا صوفيا ← كاتدرائية ميلانو",
+      "الكولسيوم ← حتشبسوت ← أيا صوفيا ← كاتدرائية ميلانو",
+      "حتشبسوت ← أيا صوفيا ← الكولسيوم ← كاتدرائية ميلانو",
+      "أيا صوفيا ← حتشبسوت ← الكولسيوم ← كاتدرائية ميلانو"
+    ],
+    correct: 0,
+    category: "عام"
+  }
+
+]; // end QUESTIONS
+
+
+/* ================================================================
+   QUIZ ENGINE
+   ================================================================ */
+
+// ── Category badge class mapping ──────────────────────────────────
+const CAT_CLASS = {
+  "مصري فرعوني":    "cat-pharaoh",
+  "ما بين النهرين": "cat-meso",
+  "إغريقي":         "cat-greek",
+  "روماني":         "cat-roman",
+  "بيزنطي":         "cat-byzantine",
+  "رومانسيك / قوطي":"cat-gothic",
+  "عام":            "cat-general",
+};
+const CAT_ICON = {
+  "مصري فرعوني":    "🏛",
+  "ما بين النهرين": "🏯",
+  "إغريقي":         "⛩",
+  "روماني":         "🏟",
+  "بيزنطي":         "⛪",
+  "رومانسيك / قوطي":"🕌",
+  "عام":            "📚",
+};
+
+// ── State ──────────────────────────────────────────────────────────
+let state = {
+  screen: "landing",    // "landing" | "quiz" | "results"
+  questions: [],        // shuffled + option-shuffled questions
+  currentIdx: 0,
+  score: 0,
+  answered: false,
+};
+
+// ── Fisher-Yates shuffle ───────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Prepare questions (shuffle questions + options) ────────────────
+function prepareQuestions() {
+  let qs = CONFIG.shuffleQuestions ? shuffle(QUESTIONS) : [...QUESTIONS];
+  if (CONFIG.shuffleOptions) {
+    qs = qs.map(q => {
+      const correctText = q.options[q.correct];
+      const shuffledOpts = shuffle(q.options);
+      return { ...q, options: shuffledOpts, correct: shuffledOpts.indexOf(correctText) };
+    });
+  }
+  return qs;
+}
+
+// ── Sound effects via Web Audio API ───────────────────────────────
+function playSound(correct) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    if (correct) {
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24);
+    } else {
+      osc.frequency.setValueAtTime(330, ctx.currentTime);
+      osc.frequency.setValueAtTime(277, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(220, ctx.currentTime + 0.3);
+    }
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.45);
+  } catch (_) { /* Audio not available */ }
+}
+
+// ── Toast notification ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+// ── Grade helper ───────────────────────────────────────────────────
+function getGrade(pct) {
+  if (pct >= 90) return { emoji: "🏆", text: "ممتاز!", color: "#10b981" };
+  if (pct >= 80) return { emoji: "🌟", text: "جيد جدًا",  color: "#3b82f6" };
+  if (pct >= 70) return { emoji: "👍", text: "جيد",       color: "#8b5cf6" };
+  if (pct >= 60) return { emoji: "✅", text: "مقبول",      color: "#f59e0b" };
+  return { emoji: "📚", text: "راجع المادة", color: "#ef4444" };
+}
+
+/* ================================================================
+   RENDERING
+   ================================================================ */
+const app = document.getElementById("app");
+
+function render() {
+  if (state.screen === "landing") renderLanding();
+  else if (state.screen === "quiz") renderQuiz();
+  else renderResults();
+}
+
+// ── Landing ────────────────────────────────────────────────────────
+function renderLanding() {
+  app.innerHTML = `
+    <div class="container">
+      <div class="landing">
+        <div class="landing-icon">🏛</div>
+        <h1>${CONFIG.title}</h1>
+        <p>${CONFIG.subtitle}</p>
+        <div class="stat-pills">
+          <div class="stat-pill"><span>${QUESTIONS.length}</span> سؤال</div>
+          <div class="stat-pill">نسبة النجاح <span>${CONFIG.passingScore}%</span></div>
+          <div class="stat-pill">أسئلة مختلطة</div>
+        </div>
+        <button class="btn btn-primary" id="startBtn">ابدأ الاختبار &nbsp;🚀</button>
+      </div>
+    </div>`;
+  document.getElementById("startBtn").onclick = startQuiz;
+}
+
+// ── Start quiz ─────────────────────────────────────────────────────
+function startQuiz() {
+  state.questions = prepareQuestions();
+  state.currentIdx = 0;
+  state.score = 0;
+  state.answered = false;
+  state.screen = "quiz";
+  render();
+}
+
+// ── Quiz screen ────────────────────────────────────────────────────
+function renderQuiz() {
+  const q = state.questions[state.currentIdx];
+  const total = state.questions.length;
+  const pct = Math.round((state.currentIdx / total) * 100);
+  const isTrueFalse = q.options.length === 2;
+  const gridClass = isTrueFalse ? "cols-2" : "cols-1";
+
+  const catCls  = CAT_CLASS[q.category] || "cat-general";
+  const catIcon = CAT_ICON[q.category]  || "📚";
+
+  app.innerHTML = `
+    <div class="container">
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span>${state.currentIdx + 1} / ${total}</span>
+          <span>النتيجة: ${state.score}</span>
+        </div>
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="pbar" style="width:${pct}%"></div>
+        </div>
+      </div>
+
+      <div class="question-screen">
+        <div class="question-card">
+          <div class="question-header">
+            <div class="category-badge ${catCls}">${catIcon} ${q.category}</div>
+            <span style="color:var(--text-muted);font-size:0.8rem">سؤال ${state.currentIdx + 1}</span>
+          </div>
+          <p class="question-text">${q.question}</p>
+        </div>
+
+        <div class="options-grid ${gridClass}" id="optionsGrid">
+          ${q.options.map((opt, i) => `
+            <div class="option-card" data-idx="${i}" style="animation-delay:${0.05 + i * 0.06}s">
+              <div class="option-label">
+                <span class="option-icon" id="icon-${i}"></span>
+                <span>${opt}</span>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>`;
+
+  // Attach click handlers
+  document.querySelectorAll(".option-card").forEach(card => {
+    card.addEventListener("click", () => onAnswer(parseInt(card.dataset.idx)));
+  });
+}
+
+// ── Handle answer ──────────────────────────────────────────────────
+function onAnswer(selectedIdx) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.currentIdx];
+  const isCorrect = selectedIdx === q.correct;
+  if (isCorrect) state.score++;
+
+  playSound(isCorrect);
+
+  // Style all cards
+  document.querySelectorAll(".option-card").forEach((card, i) => {
+    card.classList.add("disabled");
+    const icon = document.getElementById(`icon-${i}`);
+    if (i === q.correct) {
+      card.classList.add("correct");
+      if (icon) icon.textContent = "✓";
+    } else if (i === selectedIdx && !isCorrect) {
+      card.classList.add("wrong");
+      card.classList.add("shake");
+      if (icon) icon.textContent = "✗";
+    }
+  });
+
+  // If correct, pop animation on correct card
+  if (isCorrect) {
+    document.querySelectorAll(".option-card")[selectedIdx]?.classList.add("pop");
+  }
+
+  // Auto-advance
+  setTimeout(() => {
+    state.answered = false;
+    state.currentIdx++;
+    if (state.currentIdx >= state.questions.length) {
+      state.screen = "results";
+    }
+    render();
+  }, CONFIG.autoAdvanceDelay);
+}
+
+// ── Results screen ─────────────────────────────────────────────────
+function renderResults() {
+  const total = state.questions.length;
+  const pct = Math.round((state.score / total) * 100);
+  const grade = getGrade(pct);
+  const circumference = 2 * Math.PI * 54; // radius 54
+
+  app.innerHTML = `
+    <div class="container">
+      <div class="results">
+        <div class="score-ring">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle class="ring-bg"   cx="80" cy="80" r="54"/>
+            <circle class="ring-fill" cx="80" cy="80" r="54"
+              stroke="${grade.color}"
+              stroke-dasharray="${circumference}"
+              stroke-dashoffset="${circumference}"
+              id="ringFill"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-grade">${grade.emoji}</span>
+            <span class="score-pct" id="scorePct">0%</span>
+            <span class="score-label">${grade.text}</span>
+          </div>
+        </div>
+
+        <h2>انتهى الاختبار!</h2>
+        <p class="score-detail">
+          أجبت إجابةً صحيحة على <strong>${state.score}</strong> من أصل <strong>${total}</strong> سؤال.
+        </p>
+
+        <div class="results-btns">
+          <button class="btn btn-primary" id="retakeBtn">🔄 إعادة الاختبار</button>
+          <button class="btn btn-secondary" id="shareBtn">📤 مشاركة النتيجة</button>
+          <button class="btn btn-ghost" id="homeBtn">🏠 الرئيسية</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById("retakeBtn").onclick = startQuiz;
+  document.getElementById("homeBtn").onclick = () => { state.screen = "landing"; render(); };
+  document.getElementById("shareBtn").onclick = () => {
+    const txt = `حصلت على ${state.score}/${total} (${pct}%) في ${CONFIG.title}! ${grade.emoji}`;
+    navigator.clipboard?.writeText(txt)
+      .then(() => showToast("✅ تم نسخ النتيجة!"))
+      .catch(() => showToast("تعذّر النسخ. النتيجة: " + txt));
+  };
+
+  // Animate ring
+  setTimeout(() => {
+    const fill = document.getElementById("ringFill");
+    const offset = circumference - (pct / 100) * circumference;
+    if (fill) fill.style.strokeDashoffset = offset;
+  }, 100);
+
+  // Animate percentage counter
+  animateCounter("scorePct", 0, pct, 1400, v => v + "%");
+}
+
+// ── Counter animation ──────────────────────────────────────────────
+function animateCounter(id, from, to, duration, fmt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3); // ease-out-cubic
+    el.textContent = fmt(Math.round(from + (to - from) * ease));
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── Kick things off ─────────────────────────────────────────────── */
+render();
+</script>
+</body>
+</html>
